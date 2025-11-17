@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Spiderman Hologram AI</title>
-
 <style>
   body {
     margin: 0;
@@ -17,72 +16,64 @@
     color: white;
     font-family: Arial;
   }
-
   #holo-container {
     width: 260px;
     height: 260px;
     overflow: hidden;
     border-radius: 50%;
     box-shadow: 0 0 20px rgba(0, 150, 255, 0.7);
+    margin-bottom: 20px;
   }
-
   #holoVideo {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-
   .status {
-    margin-top: 15px;
     color: #00aaff;
     font-size: 14px;
+    margin-bottom: 20px;
+  }
+  #startBtn {
+    padding: 10px 20px;
+    font-size: 16px;
+    background: #00aaff;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
   }
 </style>
 </head>
-
 <body>
 
-  <div id="holo-container">
-    <img id="holoVideo" src="idle.gif" alt="Spiderman hologram" />
-  </div>
+<div id="holo-container">
+  <img id="holoVideo" src="idle.gif" alt="Spiderman hologram" />
+</div>
 
-  <div class="status">Katakan: "Hai Zidan"</div>
+<div class="status">Klik tombol untuk memulai</div>
+<button id="startBtn">Klik untuk memulai</button>
 
 <script>
-  const holo = document.getElementById("holoVideo");
-  const statusText = document.querySelector(".status");
+const holo = document.getElementById("holoVideo");
+const statusText = document.querySelector(".status");
+const startBtn = document.getElementById("startBtn");
 
-  // ---------------------------
-  // GANTI GIF
-  // ---------------------------
-  function setIdle() {
-    holo.src = "idle.gif";
-  }
+function setIdle() { holo.src = "idle.gif"; }
+function setTalk() { holo.src = "talk.gif"; }
 
-  function setTalk() {
-    holo.src = "talk.gif";
-  }
-
-  // ---------------------------
-  // SPEECH SYNTHESIS
-  // ---------------------------
-  function speak(text, callback) {
+function speak(text, callback){
     const s = new SpeechSynthesisUtterance(text);
     s.lang = "id-ID";
     s.rate = 1;
     s.onend = () => { if(callback) callback(); };
     window.speechSynthesis.speak(s);
-  }
+}
 
-  // ---------------------------
-  // SPEECH RECOGNITION
-  // ---------------------------
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-  if(!SpeechRecognition){
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if(!SpeechRecognition){
     statusText.innerHTML = "Speech Recognition tidak didukung di browser ini.";
-  } else {
-
+} else {
     let rec = new SpeechRecognition();
     rec.lang = "id-ID";
     rec.continuous = true;
@@ -91,59 +82,47 @@
     let awakened = false;
 
     rec.onresult = function(e){
-      const said = e.results[e.resultIndex][0].transcript.toLowerCase();
-      console.log("Heard:", said);
+        const said = e.results[e.resultIndex][0].transcript.toLowerCase();
+        console.log("Heard:", said);
 
-      // ---------------------------
-      // WAKE MODE SEKALI
-      // ---------------------------
-      if(!awakened){
-        if(said.includes("hai zidan")){
-          awakened = true;
-          statusText.innerHTML = "Mode aktif, silakan bertanya";
-          setTalk();
-          speak("ya, saya di sini. Silakan bertanya apa saja.", () => setIdle());
-          return;
+        if(!awakened){
+            if(said.includes("hai zidan")){
+                awakened = true;
+                statusText.innerHTML = "Mode aktif, silakan bertanya";
+                setTalk();
+                speak("ya, saya di sini. Silakan bertanya apa saja.", () => setIdle());
+                return;
+            }
+            return;
         }
-        return;
-      }
 
-      // ---------------------------
-      // QnA
-      // ---------------------------
-      let jawab = null;
+        let jawab = null;
+        if(said.includes("owner")) jawab = "owner saya adalah Fahrul Hamzidan Pulungan";
+        else if(said.includes("untuk apa kamu dibuat") || said.includes("buat apa kamu dibuat")) jawab = "Sementara ini saya adalah versi demo yang dibuat menjadi web, karena saya adalah project nyata yang akan diimplementasikan di hologram tiga dimensi.";
+        else if(said.includes("apakah kamu bisa berpantun")) jawab = "ya saya bisa.";
+        else if(said.includes("coba berpantun") || said.includes("berpantun")) jawab = "Ubur ubur ikan lele, hologram bang Zidan nih le.";
 
-      if(said.includes("owner")) {
-        jawab = "owner saya adalah Fahrul Hamzidan Pulungan";
-      } else if(said.includes("untuk apa kamu dibuat") || said.includes("buat apa kamu dibuat")) {
-        jawab = "Sementara ini saya adalah versi demo yang dibuat menjadi web, karena saya adalah project nyata yang akan diimplementasikan di hologram tiga dimensi.";
-      } else if(said.includes("apakah kamu bisa berpantun")) {
-        jawab = "ya saya bisa.";
-      } else if(said.includes("coba berpantun") || said.includes("berpantun")) {
-        jawab = "Ubur ubur ikan lele, hologram bang Zidan nih le.";
-      }
-
-      if(jawab){
-        setTalk();
-        statusText.innerHTML = "Menjawab...";
-        speak(jawab, () => {
-          setIdle();
-          statusText.innerHTML = "Mode aktif, silakan bertanya lagi";
-        });
-      } else {
-        // fallback
-        setTalk();
-        speak("saya tidak bisa menjawab pertanyaan anda, tanya saja langsung ke Zidan ya", () => {
-          setIdle();
-          statusText.innerHTML = "Mode aktif, silakan bertanya lagi";
-        });
-      }
-    }
+        if(jawab){
+            setTalk();
+            statusText.innerHTML = "Menjawab...";
+            speak(jawab, () => { setIdle(); statusText.innerHTML = "Mode aktif, silakan bertanya lagi"; });
+        } else {
+            setTalk();
+            speak("saya tidak bisa menjawab pertanyaan anda, tanya saja langsung ke Zidan ya", () => { setIdle(); statusText.innerHTML = "Mode aktif, silakan bertanya lagi"; });
+        }
+    };
 
     rec.onend = () => rec.start();
-    rec.start();
-  }
 
+    // Tombol start untuk user gesture
+    startBtn.addEventListener("click", () => {
+        speak("Halo, saya Spiderman hologram");
+        rec.start();
+        startBtn.style.display = "none";
+        statusText.innerHTML = 'Mode aktif, silakan bertanya. Katakan "Hai Zidan"';
+    });
+}
 </script>
+
 </body>
 </html>
