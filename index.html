@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spiderman Hologram AI</title>
+
+<style>
+  body {
+    margin: 0;
+    background: black;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: white;
+    font-family: Arial;
+  }
+
+  #holo-container {
+    width: 260px;
+    height: 260px;
+    overflow: hidden;
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(0, 150, 255, 0.7);
+  }
+
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: drop-shadow(0 0 10px #00aaff) brightness(1.2);
+  }
+
+  .status {
+    margin-top: 15px;
+    color: #00aaff;
+    font-size: 14px;
+  }
+</style>
+</head>
+
+<body>
+
+  <div id="holo-container">
+    <video id="holoVideo" autoplay loop muted playsinline>
+      <source src="video_idle.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <div class="status">Katakan: "Hai Zidan"</div>
+
+<script>
+  const video = document.getElementById("holoVideo");
+  const statusText = document.querySelector(".status");
+
+  // ==============================
+  // VIDEO CONTROL
+  // ==============================
+  function setIdle() {
+    video.src = "video_idle.mp4";
+    video.play();
+  }
+
+  function setTalk() {
+    video.src = "video_talk.mp4";
+    video.play();
+  }
+
+  // ==============================
+  // TEXT TO SPEECH (DENGAN CALLBACK)
+  // ==============================
+  function speak(text, callback) {
+    // Unmute audio context agar browser izinkan suara
+    video.muted = false;
+
+    const s = new SpeechSynthesisUtterance(text);
+    s.lang = "id-ID";
+    s.rate = 1;
+
+    s.onend = () => {
+      if (callback) callback();
+    };
+
+    window.speechSynthesis.speak(s);
+  }
+
+  // ==============================
+  // SPEECH RECOGNITION
+  // ==============================
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  let rec = new SpeechRecognition();
+  rec.lang = "id-ID";
+  rec.continuous = true;
+  rec.interimResults = false;
+
+  let awakened = false;
+
+  rec.onresult = function (e) {
+    const said = e.results[e.resultIndex][0].transcript.toLowerCase();
+    console.log("Heard:", said);
+
+    // ---------------------------
+    // WAKE MODE (HANYA SEKALI)
+    // ---------------------------
+    if (!awakened) {
+      if (said.includes("hai zidan")) {
+        awakened = true;
+        statusText.innerHTML = "Mode aktif, silakan bertanya";
+        setTalk();
+        speak("ya, saya di sini. Silakan bertanya apa saja.", () => {
+          setIdle();
+        });
+        return;
+      }
+      return;
+    }
+
+    // ---------------------------
+    // QNA MODE
+    // ---------------------------
+    let jawab = null;
+
+    if (said.includes("owner")) {
+      jawab = "owner saya adalah Fahrul Hamzidan Pulungan";
+    }
+    else if (said.includes("untuk apa kamu dibuat") || said.includes("buat apa kamu dibuat")) {
+      jawab = "Sementara ini saya adalah versi demo yang dibuat menjadi web, karena saya adalah project nyata yang akan diimplementasikan di hologram tiga dimensi.";
+    }
+    else if (said.includes("apakah kamu bisa berpantun")) {
+      jawab = "ya saya bisa.";
+    }
+    else if (said.includes("coba berpantun") || said.includes("berpantun")) {
+      jawab = "Ubur ubur ikan lele, hologram bang Zidan nih le.";
+    }
+
+    // ---------------------------
+    // JIKA ADA JAWABANNYA
+    // ---------------------------
+    if (jawab) {
+      setTalk();
+      statusText.innerHTML = "Menjawab...";
+      speak(jawab, () => {
+        setIdle();
+        statusText.innerHTML = "Mode aktif, silakan bertanya lagi";
+      });
+      return;
+    }
+
+    // ---------------------------
+    // FALLBACK (TIDAK ADA JAWABAN)
+    // ---------------------------
+    setTalk();
+    speak("saya tidak bisa menjawab pertanyaan anda, tanya saja langsung ke Zidan ya", () => {
+      setIdle();
+      statusText.innerHTML = "Mode aktif, silakan bertanya lagi";
+    });
+  };
+
+  rec.onend = () => rec.start();
+  rec.start();
+</script>
+
+</body>
+</html>
