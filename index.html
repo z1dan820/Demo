@@ -166,15 +166,15 @@ if(!SpeechRecognition){
                 awakened=true;
                 statusText.innerHTML="Mode aktif, silakan bertanya";
                 setTalk();
-                speak("ya, saya di sini. Silakan bertanya apa saja",()=>setIdle());
+                speak("ya, saya di sini. ada apa?",()=>setIdle());
             }
             return;
         }
 
         let jawab=null;
-        if(said.includes("owner")) jawab="owner saya adalah Fahrul Hamzidan Pulungan";
-        else if(said.includes("untuk apa kamu dibuat")||said.includes("buat apa kamu dibuat")) jawab="Sementara ini saya adalah versi demo yang dibuat menjadi web, karena saya adalah project nyata yang akan diimplementasikan di hologram tiga dimensi.";
-        else if(said.includes("apakah kamu bisa berpantun")) jawab="ya saya bisa.";
+        if(said.includes("siapa yang menciptakan mu")) jawab="yang menciptakan saya adalah Abangda Fahrul Hamzidan Pulungan";
+        else if(said.includes("untuk apa kamu diciptakan")||said.includes("apa tujuan kamu dibuat")) jawab="Sementara ini saya adalah versi demo yang dibuat menjadi web, karena saya adalah project nyata yang akan diimplementasikan di hologram tiga dimensi.";
+        else if(said.includes("kamu bisa berpantun")) jawab="ya saya bisa.";
         else if(said.includes("coba berpantun")||said.includes("berpantun")) jawab="Ubur ubur ikan lele, hologram bang Zidan nih le.";
 
         if(jawab){
@@ -182,7 +182,7 @@ if(!SpeechRecognition){
             speak(jawab,()=>{ setIdle(); statusText.innerHTML="Mode aktif, silakan bertanya lagi"; });
         }else{
             setTalk();
-            speak("saya tidak bisa menjawab pertanyaan anda, tanya saja langsung ke Zidan ya",()=>{ setIdle(); statusText.innerHTML="Mode aktif, silakan bertanya lagi"; });
+            speak("saya tidak bisa menjawab pertanyaan anda, tanya saja langsung ke bang Zidan ya",()=>{ setIdle(); statusText.innerHTML="Mode aktif, silakan bertanya lagi"; });
         }
     };
 
